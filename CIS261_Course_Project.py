@@ -4,6 +4,13 @@ def custom_round(number: float):
 def collect_employee_name():
     return input("Employee Name: ")
 
+def collect_date_range():
+    from_date = input('What is the first day of work? (MM/DD/YYYY): ')
+    to_date = input('What is the last day of work? (MM/DD/YYYY): ')
+    
+    return from_date, to_date
+    
+
 def collect_hours_worked():
     return float(input("Hours Worked: "))
 
@@ -20,14 +27,16 @@ def calculate_income_data(hours_worked, hourly_rate, tax_rate):
     
     return gross_pay, income_tax, net_pay
 
-def display_employee_data(name, hours_worked, hourly_rate, gross_pay, income_tax, net_pay):
+def display_employee_data(employee):
     print(f"""
-    Name: {name}
-    Total Hours Worked: {hours_worked}
-    Hourly Rate: ${custom_round(hourly_rate)}
-    Gross Pay: ${custom_round(gross_pay)}
-    Income Tax: ${custom_round(income_tax)}
-    Net Pay: ${custom_round(net_pay)}
+    Name: {employee["name"]}
+    From Date: {employee["from_date"]}
+    To Date: {employee["to_date"]}
+    Total Hours Worked: {employee["hours_worked"]}
+    Hourly Rate: ${custom_round(employee["hourly_rate"])}
+    Gross Pay: ${custom_round(employee["gross_pay"])}
+    Income Tax: ${custom_round(employee["income_tax"])}
+    Net Pay: ${custom_round(employee["net_pay"])}
 """)
     
 def display_total_employee_data(data):
@@ -39,6 +48,12 @@ def display_total_employee_data(data):
     Total Net Pay: ${custom_round(data["net_pay"])}
 """)      
     
+def display_totals(all_employee_data, total_employee_data):
+    display_total_employee_data(total_employee_data)
+    
+    for employee in all_employee_data:
+        display_employee_data(employee)
+        
 def main():
     total_employee_data = {
         "total_employees": 0,
@@ -48,7 +63,12 @@ def main():
         "net_pay": 0
     }
     
+    all_employees_data = []
+    
     while True:
+        temp_employee_data = {}
+
+        from_date, to_date = collect_date_range()
         employee_name = collect_employee_name()
         
         if employee_name == "End":
@@ -59,9 +79,7 @@ def main():
         tax_rate = collect_tax_rate()
         
         gross_pay, income_tax, net_pay = calculate_income_data(hours_worked, hourly_rate, tax_rate)
-        
-        display_employee_data(employee_name, hours_worked, hourly_rate, gross_pay, income_tax, net_pay)
-        
+
         total_employee_data = {
             "total_employees": total_employee_data["total_employees"] + 1,
             "hours_worked": total_employee_data["hours_worked"] + hours_worked,
@@ -70,6 +88,20 @@ def main():
             "net_pay": total_employee_data["net_pay"] + net_pay
         }
         
-    display_total_employee_data(total_employee_data)
-    
+        all_employees_data.append({
+            "from_date": from_date, 
+            "to_date": to_date, 
+            "name": employee_name,
+            "hourly_rate": hourly_rate,
+            "hours_worked": hours_worked,
+            "income_tax": income_tax,
+            "income_tax_rate": tax_rate,
+            "gross_pay": gross_pay,
+            "net_pay": net_pay
+            
+            
+        })
+
+    display_totals(all_employees_data, total_employee_data)
+        
 main()
