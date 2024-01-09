@@ -1,3 +1,12 @@
+import datetime
+
+def validate_date_format(date):
+    try:
+        datetime.datetime.strptime(date, '%m%d%Y')
+        return True
+    except ValueError:
+        return False
+
 def custom_round(number: float):
     return "{:.2f}".format(number)
 
@@ -5,20 +14,55 @@ def collect_employee_name():
     return input("Employee Name: ")
 
 def collect_date_range():
-    from_date = input('What is the first day of work? (MM/DD/YYYY): ')
-    to_date = input('What is the last day of work? (MM/DD/YYYY): ')
+    from_date = None
+    to_date = None
+    
+    while from_date == None:
+        date = input('What is the first day of work? (MM/DD/YYYY): ')
+        is_date_valid = validate_date_format(date)
+        
+        if is_date_valid:
+            from_date = date
+        else:
+            print('Date format is incorrect. Please Try again.')
+            
+    while to_date == None:
+        date = input('What is the last day of work? (MM/DD/YYYY): ')
+        is_date_valid = validate_date_format(date)
+        
+        if is_date_valid:
+            to_date = date
+        else:
+            print('Date format is incorrect. Please Try again.')
     
     return from_date, to_date
-    
 
 def collect_hours_worked():
-    return float(input("Hours Worked: "))
+    hours_worked = None
+    while hours_worked == None:
+        try:
+            hours_worked = float(input("Hours Worked: "))
+        except ValueError:
+            print('The decimal was incorrect. Please Try Again.')
+    return hours_worked
 
 def collect_hourly_rate():
-    return float(input("Hourly Rate: "))
+    hourly_rate = None
+    while hourly_rate == None:
+        try:
+            hourly_rate = float(input("Hourly Rate: "))
+        except ValueError:
+            print('The decimal was incorrect. Please Try Again')
+    return hourly_rate
 
 def collect_tax_rate():
-    return float(input("Income Tax Rate (%): "))
+    tax_rate = None
+    while tax_rate == None:
+        try:
+            tax_rate = float(input("Income Tax Rate (%): "))
+        except ValueError:
+            print('The decimal was incorrect. Please Try Again.')
+    return tax_rate
 
 def calculate_income_data(hours_worked, hourly_rate, tax_rate):
     gross_pay = hourly_rate * hours_worked
@@ -27,81 +71,25 @@ def calculate_income_data(hours_worked, hourly_rate, tax_rate):
     
     return gross_pay, income_tax, net_pay
 
-def display_employee_data(employee):
-    print(f"""
-    Name: {employee["name"]}
-    From Date: {employee["from_date"]}
-    To Date: {employee["to_date"]}
-    Total Hours Worked: {employee["hours_worked"]}
-    Hourly Rate: ${custom_round(employee["hourly_rate"])}
-    Gross Pay: ${custom_round(employee["gross_pay"])}
-    Income Tax: ${custom_round(employee["income_tax"])}
-    Net Pay: ${custom_round(employee["net_pay"])}
-""")
-    
-def display_total_employee_data(data):
-    print(f"""
-    Total Employees: {data["total_employees"]}
-    Total Hours Worked: {data["hours_worked"]}
-    Total Gross Pay: ${custom_round(data["gross_pay"])}
-    Total Tax: ${custom_round(data["income_tax"])}
-    Total Net Pay: ${custom_round(data["net_pay"])}
-""")      
-    
-def display_totals(all_employee_data, total_employee_data):
-    display_total_employee_data(total_employee_data)
-    
-    for employee in all_employee_data:
-        display_employee_data(employee)
-        
 def main():
-    total_employee_data = {
-        "total_employees": 0,
-        "hours_worked": 0,
-        "gross_pay": 0,
-        "income_tax": 0,
-        "net_pay": 0
-    }
-    
-    all_employees_data = []
-    
     while True:
-        temp_employee_data = {}
+        employee_information = open('employee_information.txt', 'a+')
+        
+        employee_name = collect_employee_name()
+         if employee_name == "End":
+            employee_information.seek(0)
+            display_data(employee_information) # left off here
 
         from_date, to_date = collect_date_range()
-        employee_name = collect_employee_name()
-        
-        if employee_name == "End":
-            break
-        
         hours_worked = collect_hours_worked()
         hourly_rate = collect_hourly_rate()
         tax_rate = collect_tax_rate()
         
         gross_pay, income_tax, net_pay = calculate_income_data(hours_worked, hourly_rate, tax_rate)
-
-        total_employee_data = {
-            "total_employees": total_employee_data["total_employees"] + 1,
-            "hours_worked": total_employee_data["hours_worked"] + hours_worked,
-            "gross_pay": total_employee_data["gross_pay"] + gross_pay,
-            "income_tax": total_employee_data["income_tax"] + income_tax,
-            "net_pay": total_employee_data["net_pay"] + net_pay
-        }
         
-        all_employees_data.append({
-            "from_date": from_date, 
-            "to_date": to_date, 
-            "name": employee_name,
-            "hourly_rate": hourly_rate,
-            "hours_worked": hours_worked,
-            "income_tax": income_tax,
-            "income_tax_rate": tax_rate,
-            "gross_pay": gross_pay,
-            "net_pay": net_pay
-            
-            
-        })
-
-    display_totals(all_employees_data, total_employee_data)
+        data = [employee_name, hourly_rate, from_date, to_date, hours_worked, income_tax, tax_rate, gross_pay, net_pay]
         
+        employee_information.write('|'.join(map(str, data)) + '\n')
+        employee_information.close()
+
 main()

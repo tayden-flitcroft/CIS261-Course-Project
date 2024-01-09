@@ -1,0 +1,2 @@
+name|hourly_rate|from_date|to_date|hours_worked|income_tax|tax_rate|gross_pay|net_pay
+Tayden|50.0|05/21/1998|05/25/1998|40.0|60.0|3.0|2000.0|1940.0Tayden|15.5|05211998|05251998|40.0|18.599999999999998|3.0|620.0|601.4
