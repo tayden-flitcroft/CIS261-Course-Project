@@ -1,6 +1,35 @@
 import datetime
 from csv import DictReader
 
+class Login:
+    def __init__(self, user_id, password, authorization):
+        self.user_id = user_id
+        self.password = password
+        self.authorization = authorization
+
+def get_all_user_data():
+    doc = open('authorization.txt')
+    data = list(DictReader(doc, delimiter="|"))
+    return data
+
+def login():
+    all_users = get_all_user_data()
+
+    user_id = input('User ID: ')
+    password = input('Password: ')
+    
+    user_dict = list(filter(lambda x: x['id'] == user_id, all_users))
+
+    if not bool(user_dict):
+        print('User ID does not exist.')
+        exit()
+
+    if user_dict[0]['password'] != password:
+        print('Password is incorrect.')
+        exit()
+
+    return Login(user_id, password, user_dict[0]['authorization'])
+
 def validate_date_format(date):
     try:
         datetime.datetime.strptime(date, '%m/%d/%Y')
@@ -72,7 +101,7 @@ def calculate_income_data(hours_worked, hourly_rate, tax_rate):
     
     return gross_pay, income_tax, net_pay
 
-def display_data():
+def display_data(current_user):
     totals = {
         "hours_worked": 0,
         "income_tax": 0,
@@ -80,27 +109,24 @@ def display_data():
         "number_of_employees": 0
     }
 
-    date_to_display = None
-
-    while date_to_display == None:
-        temp_date = input('What starting date should be used to run the report? (MM/DD/YYYY or "All"): ')
-        if (temp_date == 'All'):
+    while True:
+        date_to_display = input('What starting date should be used to run the report? (MM/DD/YYYY or "All"): ')
+        if date_to_display == 'All' or validate_date_format(date_to_display):
             break
-
-        is_date_valid = validate_date_format(temp_date)
-
-        if is_date_valid:
-            date_to_display = temp_date
-        else:
-            print('Date format is incorrect. Please Try again.')
+        print('Date format is incorrect. Please Try again.')
 
     employee_information_file = open('employee_information.txt')
     employee_information = list(DictReader(employee_information_file, delimiter='|'))
     employee_information_file.close()
 
-    if bool(date_to_display):
+    if date_to_display != 'All':
         employee_information = list(filter(lambda x: x['from_date'] == date_to_display, employee_information))
-    
+
+    print('User ID:', current_user.user_id)
+    print('Password:', current_user.password)
+    print('Authorization Code:', current_user.authorization)    
+    print()
+
     for employee in employee_information:
            totals["number_of_employees"] += 1
            totals["hours_worked"] += float(employee["hours_worked"])
@@ -126,15 +152,21 @@ Totals:
     Income Tax: {totals["income_tax"]}
     Net Pay: {totals["net_pay"]}
 ''')
+    
+    print('Bye!')
+    exit()
 
 
 def main():
+    current_user = login()
+
+    if current_user.authorization == 'User':
+        display_data(current_user)
+
     while True:
         employee_name = collect_employee_name()
         if employee_name == "End":
-            display_data()
-            print('Bye!')
-            exit()
+            display_data(current_user)
 
         from_date, to_date = collect_date_range()
         hours_worked = collect_hours_worked()
